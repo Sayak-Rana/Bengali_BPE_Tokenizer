@@ -6,7 +6,7 @@ from pathlib import Path
 # ----------------------------
 # Configuration
 # ----------------------------
-# The app expects these files to be in the same folder as this script in the repo:
+# Model filenames expected in the repository root (same folder as this script)
 MERGES_FILE = "bengali_bpe_demo.merges.txt"
 VOCAB_FILE  = "bengali_bpe_demo.vocab.json"
 
@@ -24,17 +24,12 @@ def load_model(merges_path=MERGES_FILE, vocab_path=VOCAB_FILE):
             if not ln:
                 continue
             parts = ln.split()
-            # Accept either "a b" or "ab" style; we expect two columns
+            # Expect merges written as two tokens per line (e.g., "ক া")
             if len(parts) >= 2:
                 a, b = parts[0], parts[1]
             else:
-                # fallback — attempt to split single string into two tokens
-                # but usually merges are written as "a b"
-                tokens = ln.split()
-                if len(tokens) == 2:
-                    a, b = tokens
-                else:
-                    continue
+                # fallback — skip malformed lines
+                continue
             merges.append((a, b))
     if vp.exists():
         token_to_id = json.loads(vp.read_text(encoding="utf-8"))
@@ -86,26 +81,30 @@ def pretty_tokens(tokens, hide_end=True):
 # ----------------------------
 st.set_page_config(page_title="Bengali BPE Tokenizer", layout="centered")
 st.title("Bengali BPE Tokenizer — Demo")
+
+# clear dataset attribution and language
 st.markdown(
     """
-**Language:** Bengali (Bangla)  
-This app uses a BPE tokenizer trained offline.  
-Place the following files in the same repository folder before deploying:
-- `bengali_bpe_demo.merges.txt`
-- `bengali_bpe_demo.vocab.json`
+**Tokenizer language:** **Bengali (Bangla)**  
+**Training corpus (demo):** `mHossain/bengali_sentiment_v2` (Hugging Face dataset)
 """
 )
 
 # Load model
 MERGES, TOKEN_TO_ID = load_model()
 if not MERGES or not TOKEN_TO_ID:
-    st.warning("Model files not found. Make sure 'bengali_bpe_demo.merges.txt' and 'bengali_bpe_demo.vocab.json' are present in the repo folder.")
+    st.warning(
+        "Model files not found in the app folder. Ensure 'bengali_bpe_demo.merges.txt' and 'bengali_bpe_demo.vocab.json' are present in the repository."
+    )
 else:
     st.success(f"Loaded model: {len(MERGES)} merges, vocab size = {len(TOKEN_TO_ID)}")
 
-# Controls
-hide_end = st.checkbox("Hide </w> marker in display", value=True)
-show_raw = st.checkbox("Show raw tokens (with </w>)", value=False)
+# Controls: mutually exclusive display mode using radio
+display_mode = st.radio(
+    "Token display mode:",
+    ("Hide </w> marker (clean display)", "Show raw tokens (with </w>)"),
+    index=0
+)
 
 text_in = st.text_area("Enter Bengali text here:", value="আমি মেশিন লার্নিং শিখছি", height=140)
 
@@ -114,20 +113,21 @@ if st.button("Tokenize"):
         st.error("Model not loaded. Add model files to the repo.")
     else:
         tokens, ids = encode_text(text_in, MERGES, TOKEN_TO_ID)
-        st.write("#### Tokens (display)")
-        st.write(pretty_tokens(tokens, hide_end=hide_end))
-        if show_raw:
-            st.write("#### Raw tokens (debug)")
+
+        if display_mode == "Hide </w> marker (clean display)":
+            st.write("#### Tokens (display)")
+            st.write(pretty_tokens(tokens, hide_end=True))
+        else:
+            st.write("#### Raw tokens")
             st.write(tokens)
+
         st.write("#### Token IDs (per token)")
         st.write(ids)
 
 # Small about / metadata
 st.markdown("---")
 st.markdown(
-    "Model metadata:\n\n"
-    "- Tokenizer language: **Bengali (Bangla)**\n"
-    "- Training corpus: e.g. `mHossain/bengali_sentiment_v2` (used for demo)\n"
-    "- Model files: `bengali_bpe_demo.merges.txt`, `bengali_bpe_demo.vocab.json`\n\n"
-    "If you update the model files in the repo, redeploy on Streamlit Cloud to pick up changes."
+    "- **Tokenizer language:** Bengali (Bangla)\n"
+    "- **Training corpus used for demo:** https://huggingface.co/datasets/mHossain/bengali_sentiment_v2\n"
+    "- If you update the model files in the repository, redeploy on Streamlit Cloud to pick up changes."
 )
