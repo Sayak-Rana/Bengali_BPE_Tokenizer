@@ -79,8 +79,8 @@ def pretty_tokens(tokens, hide_end=True):
 # ----------------------------
 # Streamlit UI
 # ----------------------------
-st.set_page_config(page_title="Bengali BPE Tokenizer", layout="centered")
-st.title("Bengali BPE Tokenizer — Demo")
+st.set_page_config(page_title="Bengali Language Tokenizer", layout="centered")
+st.title("Bengali Language Tokenizer")
 
 # clear dataset attribution and language
 st.markdown(
@@ -128,6 +128,6 @@ if st.button("Tokenize"):
 st.markdown("---")
 st.markdown(
     "- **Tokenizer language:** Bengali (Bangla)\n"
-    "- **Training corpus used for demo:** https://huggingface.co/datasets/mHossain/bengali_sentiment_v2\n"
-    "- If you update the model files in the repository, redeploy on Streamlit Cloud to pick up changes."
+    "- **Training corpus used for demo:** https://huggingface.co/datasets/mHossain/bengali_sentiment_v2"
+    # "- If you update the model files in the repository, redeploy on Streamlit Cloud to pick up changes."
 )
