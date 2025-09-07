@@ -6,7 +6,7 @@ This project implements a **Byte Pair Encoding (BPE) tokenizer** for the **Benga
 
 ## Files in this repository
 
-- **`nlp_assign1.ipynb`**  
+- **`nlp_assign1.py`**  
   - Used to load the Bengali corpus.  
   - Implement the BPE algorithm from scratch.  
   - Train the tokenizer.  
